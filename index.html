@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Rx Generator</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Rx">
+<meta name="theme-color" content="#1f5fd6">
+<style>
+:root{--blue:#1f5fd6;--navy:#0f2f73;--yellow:#ffc928;--bg:#f3f6fc;--card:#fff;--ink:#16213a;--mut:#5b6785;--line:#d5ddee}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1424;--card:#16203a;--ink:#eaf0ff;--mut:#9aa8c9;--line:#2a3860}}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font:16px/1.4 system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+header{background:var(--blue);color:#fff;padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:5px solid var(--yellow)}
+header img{width:44px;height:44px}
+header h1{margin:0;font-size:20px}
+header p{margin:0;font-size:13px;opacity:.85}
+nav{display:flex;gap:8px;padding:12px 16px 0;max-width:720px;margin:auto}
+nav button{flex:1;padding:11px;border:2px solid var(--blue);background:transparent;color:var(--blue);border-radius:10px;font-weight:700;font-size:15px}
+nav button.on{background:var(--blue);color:#fff}
+main{max-width:720px;margin:auto;padding:12px 16px 24px}
+section[hidden]{display:none}
+fieldset,.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin:0 0 14px}
+legend{font-weight:700;padding:0 6px;color:var(--blue)}
+label{display:block;font-size:13px;color:var(--mut);margin:10px 0 4px}
+input,select,textarea{width:100%;padding:11px;font:inherit;font-size:16px;border:1px solid var(--line);border-radius:9px;background:var(--bg);color:var(--ink)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+button.pri{width:100%;padding:15px;border:0;border-radius:12px;background:var(--yellow);color:#241a00;font-weight:800;font-size:17px;margin-top:6px}
+button.sec{padding:10px 14px;border:2px solid var(--blue);background:transparent;color:var(--blue);border-radius:10px;font-weight:700;font-size:14px}
+button.del{float:right;border-color:#c0392b;color:#c0392b;padding:6px 10px}
+canvas{width:100%;height:150px;background:#fff;border:2px dashed var(--blue);border-radius:10px;touch-action:none;display:block}
+.hint{font-size:12px;color:var(--mut);margin:6px 0 0}
+.msg{padding:10px;border-radius:9px;background:#e6f6e6;color:#14551b;margin:10px 0;display:none}
+footer{text-align:center;font-size:12px;color:var(--mut);padding:8px 20px 28px;max-width:720px;margin:auto}
+footer a{color:var(--blue)}
+@media(max-width:420px){.row3{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<header><img src="icon-192.png" alt=""><div><h1>Rx Generator</h1><p>Prescription to PDF, on your device</p></div></header>
+<nav><button id="tRx" class="on">Prescription</button><button id="tPr">My profile</button></nav>
+<main>
+<section id="vRx">
+ <fieldset><legend>Patient</legend>
+  <label>Full name</label><input id="pt_name" autocomplete="off">
+  <div class="row3"><div><label>Age</label><input id="pt_age" placeholder="e.g. 34 / 6 mo"></div>
+  <div><label>Sex</label><select id="pt_sex"><option value="">-</option><option>Male</option><option>Female</option></select></div>
+  <div><label>Weight (kg)</label><input id="pt_wt" inputmode="decimal"></div></div>
+  <label>Address</label><input id="pt_addr" autocomplete="off">
+  <div class="row"><div><label>Date</label><input id="rx_date" type="date"></div>
+  <div><label>Allergies</label><input id="pt_all" placeholder="e.g. Penicillin / NKDA"></div></div>
+ </fieldset>
+ <div id="meds"></div>
+ <button class="sec" id="addMed" style="width:100%;margin-bottom:14px">+ Add another medication</button>
+ <fieldset><legend>Follow-up</legend>
+  <label>Follow-up date or notes (optional)</label><textarea id="rx_fu" rows="2"></textarea>
+ </fieldset>
+ <fieldset><legend>Physician signature</legend>
+  <canvas id="sig2" width="700" height="260"></canvas>
+  <p class="hint">Your saved signature appears here. Sign again with your finger if needed. The signature is printed on the PDF.</p>
+  <button class="sec" id="sig2Clr" type="button">Clear and re-sign</button>
+  <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="sig2Save" style="width:auto"> Save this as my default signature</label>
+ </fieldset>
+ <button class="pri" id="gen">Create PDF</button>
+ <p class="hint">Patient details are never saved. The form clears after the PDF is created. Dangerous drugs (S2) still require the official DDB prescription form.</p>
+</section>
+
+<section id="vPr" hidden>
+ <fieldset><legend>Physician</legend>
+  <label>Full name (with title, e.g. Juan Dela Cruz, MD)</label><input id="p_name">
+  <div class="row"><div><label>PRC Lic. No.</label><input id="p_prc"></div><div><label>PTR No.</label><input id="p_ptr"></div></div>
+  <label>S2 Lic. No. (optional)</label><input id="p_s2">
+ </fieldset>
+ <fieldset><legend>Clinic letterhead</legend>
+  <label>Clinic name</label><input id="p_clinic">
+  <label>Address</label><input id="p_addr">
+  <div class="row"><div><label>Contact number</label><input id="p_contact" inputmode="tel"></div><div><label>Clinic hours</label><input id="p_hours" placeholder="Mon-Fri 9am-4pm"></div></div>
+ </fieldset>
+ <fieldset><legend>Signature</legend>
+  <canvas id="sig" width="700" height="260"></canvas>
+  <p class="hint">Sign with your finger or Apple Pencil.</p>
+  <button class="sec" id="sigClr" type="button">Clear signature</button>
+ </fieldset>
+ <button class="pri" id="saveP">Save profile on this device</button>
+ <div class="msg" id="saved">Profile saved.</div>
+</section>
+</main>
+
+<template id="medT">
+ <fieldset class="med"><legend>Medication</legend>
+  <button class="sec del" type="button">Remove</button>
+  <label>Generic name</label><input class="m_gen" list="gl" autocomplete="off" autocapitalize="words">
+  <div class="row"><div><label>Brand (optional)</label><input class="m_brand"></div><div><label>Dosage / strength</label><input class="m_dose" placeholder="e.g. 500 mg"></div></div>
+  <div class="row"><div><label>Number of tabs / qty</label><input class="m_qty" inputmode="numeric"></div>
+  <div><label>Unit</label><select class="m_unit"><option>tablet(s)</option><option>capsule(s)</option><option>mL</option><option>ampule(s)</option><option>vial(s)</option><option>sachet(s)</option><option>tube(s)</option><option>bottle(s)</option><option>box(es)</option><option>piece(s)</option></select></div></div>
+  <div class="row"><div><label>Route</label><select class="m_route"><option>Oral</option><option>Sublingual</option><option>IM</option><option>IV</option><option>SC</option><option>Topical</option><option>Ophthalmic</option><option>Otic</option><option>Nasal</option><option>Inhalation</option><option>Rectal</option><option>Vaginal</option><option>Other</option></select></div>
+  <div><label>Frequency</label><select class="m_freq"><option>once daily</option><option>twice daily (BID)</option><option>three times a day (TID)</option><option>four times a day (QID)</option><option>every 4 hours</option><option>every 6 hours</option><option>every 8 hours</option><option>every 12 hours</option><option>at bedtime</option><option>once a week</option><option>as needed (PRN)</option><option>single dose (STAT)</option></select></div></div>
+  <label>Duration</label><input class="m_dur" placeholder="e.g. 7 days">
+  <label>Indication</label><input class="m_ind">
+  <label>Extra sig instructions (optional)</label><input class="m_note" placeholder="e.g. after meals">
+ </fieldset>
+</template>
+<datalist id="gl"></datalist>
+
+<footer>This app was created by Isabella Navarro, MD. Latest version October 2026. <a href="mailto:isaymotion@gmail.com">isaymotion@gmail.com</a></footer>
+<script src="pdf.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
