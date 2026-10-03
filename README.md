@@ -1,11 +1,12 @@
 # Rx Generator
 
-Offline-capable prescription generator (Philippine setting) that creates a PDF on-device. No server, no libraries, no patient data stored.
+Offline-capable prescription generator (Philippine setting) that creates a PDF on-device. No server, no libraries, no patient data stored unless you opt in.
 
 ## Features
-- Physician profile saved on the device: name, PRC Lic. No., PTR No., S2 Lic. No., clinic letterhead, drawn signature
+- Multiple physician profiles, each saved on the device: name, PRC Lic. No., PTR No., S2 Lic. No., clinic letterhead, drawn signature
 - Patient name, age, sex, weight, address, allergies, date
 - Multiple medications: generic name (brand optional), dosage, quantity in numerals and words, route, frequency, duration, indication, extra sig
+- Medication templates, and an optional (off by default) patient list and prescription history stored only on the device
 - A5 PDF opens in the iOS share sheet (save, print, AirDrop, send)
 - Installs to the Home Screen and works offline
 
@@ -16,7 +17,7 @@ Offline-capable prescription generator (Philippine setting) that creates a PDF o
 4. Share button > **Add to Home Screen**. Do this so iOS keeps your saved profile and signature.
 
 ## Notes
-- Patient details are cleared after every PDF.
+- The form is cleared after every PDF. Patient list and history are saved only if you switch them on in the Saved tab; they stay on the device, so protect it with a passcode.
 - Dangerous drugs (S2) still require the official DDB prescription form.
 - Verify every prescription before issuing it.
 

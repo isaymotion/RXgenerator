@@ -40,16 +40,18 @@ canvas{width:100%;height:150px;background:#fff;border:2px dashed var(--blue);bor
 .msg{padding:10px;border-radius:9px;background:#e6f6e6;color:#14551b;margin:10px 0;display:none}
 footer{text-align:center;font-size:12px;color:var(--mut);padding:8px 20px 28px;max-width:720px;margin:auto}
 footer a{color:var(--blue)}
+.it{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.it small{display:block;color:var(--mut)}.it button{padding:6px 10px;margin-left:4px}
 @media(max-width:420px){.row3{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
 <header><img src="icon-192.png" alt=""><div><h1>Rx Generator</h1><p>Prescription to PDF, on your device</p></div></header>
-<nav><button id="tRx" class="on">Prescription</button><button id="tPr">My profile</button></nav>
+<nav><button id="tRx" class="on">Prescription</button><button id="tSv">Saved</button><button id="tPr">My profile</button></nav>
 <main>
 <section id="vRx">
+ <label>Prescribing as</label><select id="profSel2" style="margin-bottom:12px"></select>
  <fieldset><legend>Patient</legend>
-  <label>Full name</label><input id="pt_name" autocomplete="off">
+  <label>Full name</label><input id="pt_name" list="ptl" autocomplete="off">
   <div class="row3"><div><label>Age</label><input id="pt_age" placeholder="e.g. 34 / 6 mo"></div>
   <div><label>Sex</label><select id="pt_sex"><option value="">-</option><option>Male</option><option>Female</option></select></div>
   <div><label>Weight (kg)</label><input id="pt_wt" inputmode="decimal"></div></div>
@@ -58,6 +60,7 @@ footer a{color:var(--blue)}
   <div><label>Allergies</label><input id="pt_all" placeholder="e.g. Penicillin / NKDA"></div></div>
  </fieldset>
  <div id="meds"></div>
+ <select id="tplSel" style="margin-bottom:10px"></select>
  <button class="sec" id="addMed" style="width:100%;margin-bottom:14px">+ Add another medication</button>
  <fieldset><legend>Follow-up</legend>
   <label>Follow-up date or notes (optional)</label><textarea id="rx_fu" rows="2"></textarea>
@@ -69,10 +72,12 @@ footer a{color:var(--blue)}
   <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="sig2Save" style="width:auto"> Save this as my default signature</label>
  </fieldset>
  <button class="pri" id="gen">Create PDF</button>
- <p class="hint">Patient details are never saved. The form clears after the PDF is created. Dangerous drugs (S2) still require the official DDB prescription form.</p>
+ <p class="hint">The form clears after the PDF is created. Patient details are stored only if you turn that on in the Saved tab. Dangerous drugs (S2) still require the official DDB prescription form.</p>
 </section>
 
 <section id="vPr" hidden>
+ <fieldset><legend>Physician profiles</legend><select id="profSel"></select>
+  <div class="row" style="margin-top:10px"><button class="sec" id="newProf" type="button">+ New profile</button><button class="sec" id="delProf" type="button">Delete this profile</button></div></fieldset>
  <fieldset><legend>Physician</legend>
   <label>Full name (with title, e.g. Juan Dela Cruz, MD)</label><input id="p_name">
   <div class="row"><div><label>PRC Lic. No.</label><input id="p_prc"></div><div><label>PTR No.</label><input id="p_ptr"></div></div>
@@ -91,6 +96,15 @@ footer a{color:var(--blue)}
  <button class="pri" id="saveP">Save profile on this device</button>
  <div class="msg" id="saved">Profile saved.</div>
 </section>
+<section id="vSv" hidden>
+ <fieldset><legend>Patient list and history</legend>
+  <label style="display:flex;gap:8px;align-items:center;color:var(--ink)"><input type="checkbox" id="keepOn" style="width:auto"> Save patients and prescription history on this device</label>
+  <p class="hint">Off by default. Data stays on this device and is never sent anywhere. Turning it on means you are keeping patient data, so protect your device (Data Privacy Act).</p>
+ </fieldset>
+ <fieldset><legend>Templates</legend><div id="tplList"></div></fieldset>
+ <fieldset><legend>Patients</legend><input id="ptSearch" placeholder="Search patients"><div id="ptList"></div><button class="sec" id="ptAll" style="margin-top:10px">Delete all patients</button></fieldset>
+ <fieldset><legend>History</legend><div id="hxList"></div><button class="sec" id="hxAll" style="margin-top:10px">Delete all history</button></fieldset>
+</section>
 </main>
 
 <template id="medT">
@@ -105,9 +119,10 @@ footer a{color:var(--blue)}
   <label>Duration</label><input class="m_dur" placeholder="e.g. 7 days">
   <label>Indication</label><input class="m_ind">
   <label>Extra sig instructions (optional)</label><input class="m_note" placeholder="e.g. after meals">
+  <button class="sec tpl" type="button" style="margin-top:12px">Save as template</button>
  </fieldset>
 </template>
-<datalist id="gl"></datalist>
+<datalist id="gl"></datalist><datalist id="ptl"></datalist>
 
 <footer>This app was created by Isabella Navarro, MD. Latest version October 2026. <a href="mailto:isaymotion@gmail.com">isaymotion@gmail.com</a></footer>
 <script src="pdf.js"></script>

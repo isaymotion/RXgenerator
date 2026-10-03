@@ -5,19 +5,19 @@ const GENERICS = ['Acetylcysteine', 'Amlodipine', 'Amoxicillin', 'Amoxicillin + 
 $('#gl').innerHTML = GENERICS.map(g => `<option value="${g}">`).join('');
 
 /* ---------- tabs ---------- */
-function tab(rx) {
-  $('#vRx').hidden = !rx; $('#vPr').hidden = rx;
-  $('#tRx').classList.toggle('on', rx); $('#tPr').classList.toggle('on', !rx);
-  scrollTo(0, 0);
+function tab(t) {
+  ['Rx', 'Sv', 'Pr'].forEach(k => { $('#v' + k).hidden = k !== t; $('#t' + k).classList.toggle('on', k === t); });
+  if (t === 'Sv') renderSaved(); scrollTo(0, 0);
 }
-$('#tRx').onclick = () => tab(true);
-$('#tPr').onclick = () => tab(false);
+['Rx', 'Sv', 'Pr'].forEach(k => $('#t' + k).onclick = () => tab(k));
 
 /* ---------- medications ---------- */
-function addMed() {
+function addMed(m) {
   const n = $('#medT').content.cloneNode(true), f = n.querySelector('.med');
   f.querySelector('.del').onclick = () => { f.remove(); renum(); };
-  $('#meds').appendChild(n); renum();
+  f.querySelector('.tpl').onclick = () => saveTpl(readMed(f));
+  if (m) fillMed(f, m);
+  $('#meds').appendChild(n); renum(); return f;
 }
 function renum() {
   const m = document.querySelectorAll('.med');
@@ -26,7 +26,7 @@ function renum() {
     f.querySelector('.del').style.display = m.length > 1 ? '' : 'none';
   });
 }
-$('#addMed').onclick = addMed;
+$('#addMed').onclick = () => addMed();
 
 /* ---------- signature pads ---------- */
 function pad(cv) {
@@ -45,22 +45,38 @@ const P1 = pad($('#sig')), P2 = pad($('#sig2'));
 $('#sigClr').onclick = () => P1.clear();
 $('#sig2Clr').onclick = () => P2.clear();
 
-/* ---------- profile storage ---------- */
-function loadProfile() {
-  try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
+/* ---------- storage + physician profiles ---------- */
+const he = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+const jget = (k, d) => { try { return JSON.parse(localStorage.getItem(k)) || d; } catch (e) { return d; } };
+const jset = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { alert('Could not save on this device.'); return false; } };
+let PR = jget('rxProfiles.v2', null);
+if (!PR) { const id = uid(); PR = { list: [Object.assign({}, jget(KEY, {}), { id })], active: id }; }
+const loadProfile = () => PR.list.find(p => p.id === PR.active) || PR.list[0];
+const saveProfiles = () => jset('rxProfiles.v2', PR);
+function renderProfiles() {
+  const o = PR.list.map(p => `<option value="${p.id}">${he(p.name || '(unnamed profile)')}</option>`).join('');
+  ['#profSel', '#profSel2'].forEach(s => { $(s).innerHTML = o; $(s).value = PR.active; });
 }
 function fillProfile() {
   const p = loadProfile();
   PF.forEach(k => $('#p_' + k).value = p[k] || '');
-  P1.load(p.sig); P2.load(p.sig);
+  P1.clear(); P2.clear(); P1.load(p.sig); P2.load(p.sig);
   return p;
 }
+function switchProfile(id) { PR.active = id; saveProfiles(); renderProfiles(); fillProfile(); }
+['#profSel', '#profSel2'].forEach(s => $(s).onchange = e => switchProfile(e.target.value));
+$('#newProf').onclick = () => { const p = { id: uid() }; PR.list.push(p); switchProfile(p.id); };
+$('#delProf').onclick = () => {
+  if (PR.list.length < 2) { alert('You need at least one profile.'); return; }
+  if (!confirm('Delete this profile and its signature?')) return;
+  PR.list = PR.list.filter(p => p.id !== PR.active); switchProfile(PR.list[0].id);
+};
 $('#saveP').onclick = () => {
-  const p = {}; PF.forEach(k => p[k] = $('#p_' + k).value.trim());
-  p.sig = P1.data();
-  try { localStorage.setItem(KEY, JSON.stringify(p)); } catch (e) { alert('Could not save on this device.'); return; }
+  const p = loadProfile(); PF.forEach(k => p[k] = $('#p_' + k).value.trim()); p.sig = P1.data();
+  if (!saveProfiles()) return;
   if (navigator.storage && navigator.storage.persist) navigator.storage.persist();
-  P2.clear(); P2.load(p.sig);
+  renderProfiles(); P2.clear(); P2.load(p.sig);
   const m = $('#saved'); m.style.display = 'block'; setTimeout(() => m.style.display = 'none', 2500);
 };
 
@@ -149,7 +165,7 @@ function resetForm() {
 }
 $('#gen').onclick = async () => {
   const P = loadProfile();
-  if (!P.name) { alert('Please save your physician profile first.'); tab(false); return; }
+  if (!P.name) { alert('Please save your physician profile first.'); tab('Pr'); return; }
   const R = {
     name: $('#pt_name').value.trim(), age: $('#pt_age').value.trim(), sex: $('#pt_sex').value, wt: $('#pt_wt').value.trim(),
     addr: $('#pt_addr').value.trim(), all: $('#pt_all').value.trim(), date: $('#rx_date').value || today(), fu: $('#rx_fu').value.trim(),
@@ -162,9 +178,10 @@ $('#gen').onclick = async () => {
   if (R.meds.some(m => !m.gen || !m.qty)) { alert('Each medication needs a generic name and a quantity.'); return; }
   const sigSrc = P2.data();
   if (!sigSrc && !confirm('No signature drawn. Pharmacies only accept signed prescriptions. Create the PDF anyway?')) return;
-  if (sigSrc && $('#sig2Save').checked) { P.sig = sigSrc; try { localStorage.setItem(KEY, JSON.stringify(P)); } catch (e) { } P1.clear(); P1.load(sigSrc); }
+  if (sigSrc && $('#sig2Save').checked) { P.sig = sigSrc; saveProfiles(); P1.clear(); P1.load(sigSrc); }
   const sig = await jpegFromSig(sigSrc);
   const bytes = buildPdf(P, R, sig);
+  if (KEEP) rememberRx(R);
   const fname = `Rx_${R.name.replace(/[^\w]+/g, '_')}_${R.date}.pdf`;
   const blob = new Blob([bytes], { type: 'application/pdf' });
   const file = new File([blob], fname, { type: 'application/pdf' });
@@ -176,8 +193,74 @@ $('#gen').onclick = async () => {
   resetForm();
 };
 
+/* ---------- templates, patients, history ---------- */
+const MF = { gen: '.m_gen', brand: '.m_brand', dose: '.m_dose', qty: '.m_qty', unit: '.m_unit', route: '.m_route', freq: '.m_freq', dur: '.m_dur', ind: '.m_ind', note: '.m_note' };
+const readMed = f => { const m = {}; for (const k in MF) m[k] = val(f, MF[k]); return m; };
+const fillMed = (f, m) => { for (const k in MF) f.querySelector(MF[k]).value = m[k] || ''; };
+let TP = jget('rxTemplates.v1', []), PT = jget('rxPatients.v1', []), HX = jget('rxHistory.v1', []), KEEP = jget('rxKeep.v1', false);
+
+function renderTpl() {
+  $('#tplSel').innerHTML = '<option value="">+ Add medication from template...</option>' + TP.map(t => `<option value="${t.id}">${he(t.label)}</option>`).join('');
+}
+function saveTpl(m) {
+  if (!m.gen) { alert('Enter the generic name first.'); return; }
+  const label = prompt('Template name:', `${m.gen} ${m.dose}`.trim()); if (!label) return;
+  TP.push({ id: uid(), label, med: m }); jset('rxTemplates.v1', TP); renderTpl();
+}
+$('#tplSel').onchange = e => {
+  const t = TP.find(x => x.id === e.target.value); e.target.value = ''; if (!t) return;
+  const ms = document.querySelectorAll('.med');
+  if (ms.length === 1 && !val(ms[0], '.m_gen')) fillMed(ms[0], t.med); else addMed(t.med);
+};
+
+function renderPtl() { $('#ptl').innerHTML = KEEP ? PT.map(p => `<option value="${he(p.name)}">`).join('') : ''; }
+function fillPatient(p) {
+  $('#pt_name').value = p.name; $('#pt_age').value = p.age || ''; $('#pt_sex').value = p.sex || '';
+  $('#pt_wt').value = p.wt || ''; $('#pt_addr').value = p.addr || ''; $('#pt_all').value = p.all || '';
+}
+$('#pt_name').onchange = () => {
+  const n = $('#pt_name').value.trim().toLowerCase(), p = KEEP && PT.find(x => x.name.toLowerCase() === n);
+  if (p && !$('#pt_age').value && !$('#pt_addr').value) fillPatient(p);
+};
+function rememberRx(R) {
+  const p = { name: R.name, age: R.age, sex: R.sex, wt: R.wt, addr: R.addr, all: R.all };
+  const i = PT.findIndex(x => x.name.toLowerCase() === p.name.toLowerCase());
+  if (i >= 0) { p.id = PT[i].id; PT[i] = p; } else { p.id = uid(); PT.push(p); }
+  HX.unshift({ id: uid(), date: R.date, patient: p, meds: R.meds }); HX = HX.slice(0, 200);
+  jset('rxPatients.v1', PT); jset('rxHistory.v1', HX); renderPtl();
+}
+function renderSaved() {
+  $('#keepOn').checked = KEEP;
+  $('#tplList').innerHTML = TP.map(t => `<div class="it"><span>${he(t.label)}</span><button class="sec" data-x="tD" data-id="${t.id}">Delete</button></div>`).join('') || '<p class="hint">None yet. Tap "Save as template" on any medication.</p>';
+  const q = $('#ptSearch').value.toLowerCase();
+  $('#ptList').innerHTML = PT.filter(p => p.name.toLowerCase().includes(q)).sort((a, b) => a.name.localeCompare(b.name)).map(p => `<div class="it"><span>${he(p.name)}<small>${he([p.age, p.sex].filter(Boolean).join(' / '))}</small></span><span><button class="sec" data-x="pU" data-id="${p.id}">Use</button><button class="sec" data-x="pD" data-id="${p.id}">Delete</button></span></div>`).join('') || '<p class="hint">Empty.</p>';
+  $('#hxList').innerHTML = HX.map(h => `<div class="it"><span>${he(h.patient.name)}<small>${he(fmtDate(h.date))}: ${he(h.meds.map(m => m.gen).join(', '))}</small></span><span><button class="sec" data-x="hU" data-id="${h.id}">Reuse</button><button class="sec" data-x="hD" data-id="${h.id}">Delete</button></span></div>`).join('') || '<p class="hint">Empty.</p>';
+}
+$('#ptSearch').oninput = renderSaved;
+$('#keepOn').onchange = e => {
+  KEEP = e.target.checked; jset('rxKeep.v1', KEEP);
+  if (!KEEP && (PT.length || HX.length) && confirm('Also delete the saved patients and history now?')) { PT = []; HX = []; jset('rxPatients.v1', PT); jset('rxHistory.v1', HX); }
+  renderPtl(); renderSaved();
+};
+$('#ptAll').onclick = () => { if (confirm('Delete ALL saved patients?')) { PT = []; jset('rxPatients.v1', PT); renderPtl(); renderSaved(); } };
+$('#hxAll').onclick = () => { if (confirm('Delete ALL history?')) { HX = []; jset('rxHistory.v1', HX); renderSaved(); } };
+$('#vSv').addEventListener('click', e => {
+  const b = e.target.closest('button[data-x]'); if (!b) return;
+  const id = b.dataset.id, x = b.dataset.x;
+  if (x === 'tD' && confirm('Delete this template?')) { TP = TP.filter(t => t.id !== id); jset('rxTemplates.v1', TP); renderTpl(); }
+  if (x === 'pD' && confirm('Delete this patient?')) { PT = PT.filter(p => p.id !== id); jset('rxPatients.v1', PT); renderPtl(); }
+  if (x === 'hD' && confirm('Delete this entry?')) { HX = HX.filter(h => h.id !== id); jset('rxHistory.v1', HX); }
+  if (x === 'pU') { fillPatient(PT.find(p => p.id === id)); tab('Rx'); return; }
+  if (x === 'hU') {
+    const h = HX.find(k => k.id === id); fillPatient(h.patient); $('#meds').innerHTML = '';
+    h.meds.forEach(m => addMed(m)); $('#rx_date').value = today(); tab('Rx'); return;
+  }
+  renderSaved();
+});
+
 /* ---------- init ---------- */
+renderProfiles(); renderTpl(); renderPtl();
 const prof = fillProfile();
 resetForm();
-if (!prof.name) tab(false);
+if (!prof.name) tab('Pr');
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => { });
