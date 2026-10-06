@@ -5,10 +5,16 @@ const GENERICS = ['Acetylcysteine', 'Amlodipine', 'Amoxicillin', 'Amoxicillin + 
 $('#gl').innerHTML = GENERICS.map(g => `<option value="${g}">`).join('');
 
 /* ---------- tabs ---------- */
-function tab(t) {
+let cur = 'Rx'; const TS = [];
+function tab(t, pop) {
+  if (!pop && t !== cur) { TS.push(cur); history.pushState({ t }, ''); }
+  cur = t;
   ['Rx', 'Sv', 'Pr'].forEach(k => { $('#v' + k).hidden = k !== t; $('#t' + k).classList.toggle('on', k === t); });
+  $('#back').hidden = t === 'Rx';
   if (t === 'Sv') renderSaved(); scrollTo(0, 0);
 }
+addEventListener('popstate', () => { if (TS.length) tab(TS.pop(), true); });
+$('#back').onclick = () => { if (TS.length) history.back(); else tab('Rx'); };
 ['Rx', 'Sv', 'Pr'].forEach(k => $('#t' + k).onclick = () => tab(k));
 
 /* ---------- medications ---------- */
@@ -257,6 +263,40 @@ $('#vSv').addEventListener('click', e => {
   }
   renderSaved();
 });
+
+/* ---------- backup / restore ---------- */
+$('#bkExp').onclick = async () => {
+  const d = { app: 'rx-generator', version: 1, exported: new Date().toISOString(), profiles: PR, templates: TP };
+  if ($('#bkPat').checked) { d.patients = PT; d.history = HX; d.keep = KEEP; }
+  const name = `rx-backup-${today()}.json`, blob = new Blob([JSON.stringify(d)], { type: 'application/json' });
+  const file = new File([blob], name, { type: 'application/json' });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file] }); return; } }
+  catch (e) { if (e.name === 'AbortError') return; }
+  const l = document.createElement('a'); l.href = URL.createObjectURL(blob); l.download = name; l.click();
+};
+$('#bkImp').onclick = () => $('#bkFile').click();
+$('#bkFile').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
+  let d; try { d = JSON.parse(await f.text()); } catch (x) { }
+  if (!d || d.app !== 'rx-generator' || !d.profiles || !Array.isArray(d.profiles.list) || !d.profiles.list.length) { alert('This is not a valid Rx Generator backup.'); return; }
+  if (!confirm('Restore this backup? Profiles and templates on this device will be replaced.' + (d.patients ? ' Saved patients and history will be replaced too.' : ''))) return;
+  PR = d.profiles; if (!PR.list.some(p => p.id === PR.active)) PR.active = PR.list[0].id;
+  TP = Array.isArray(d.templates) ? d.templates : [];
+  saveProfiles(); jset('rxTemplates.v1', TP);
+  if (Array.isArray(d.patients)) { PT = d.patients; HX = Array.isArray(d.history) ? d.history : []; KEEP = !!d.keep; jset('rxPatients.v1', PT); jset('rxHistory.v1', HX); jset('rxKeep.v1', KEEP); }
+  renderProfiles(); fillProfile(); renderTpl(); renderPtl(); alert('Backup restored.');
+};
+
+/* ---------- theme ---------- */
+function setTheme(on) {
+  document.body.classList.toggle('gba', on);
+  document.querySelector('header img').src = on ? 'icon-px.png' : 'icon-192.png';
+  $('#theme').textContent = on ? 'MODERN' : '16-BIT';
+  $('meta[name=theme-color]').content = on ? '#2a2060' : '#1f5fd6';
+  try { localStorage.setItem('rxTheme', on ? 'gba' : ''); } catch (e) { }
+}
+$('#theme').onclick = () => setTheme(!document.body.classList.contains('gba'));
+try { setTheme(localStorage.getItem('rxTheme') === 'gba'); } catch (e) { }
 
 /* ---------- init ---------- */
 renderProfiles(); renderTpl(); renderPtl();

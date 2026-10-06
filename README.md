@@ -7,6 +7,9 @@ Offline-capable prescription generator (Philippine setting) that creates a PDF o
 - Patient name, age, sex, weight, address, allergies, date
 - Multiple medications: generic name (brand optional), dosage, quantity in numerals and words, route, frequency, duration, indication, extra sig
 - Medication templates, and an optional (off by default) patient list and prescription history stored only on the device
+- Backup and restore of profiles, signatures and templates (patient data optional) to a JSON file
+- Optional 16-bit (GBA-style) theme, switchable from the header
+- In-app Back button (also works with the iOS swipe-back gesture)
 - A5 PDF opens in the iOS share sheet (save, print, AirDrop, send)
 - Installs to the Home Screen and works offline
 
@@ -20,6 +23,9 @@ Offline-capable prescription generator (Philippine setting) that creates a PDF o
 - The form is cleared after every PDF. Patient list and history are saved only if you switch them on in the Saved tab; they stay on the device, so protect it with a passcode.
 - Dangerous drugs (S2) still require the official DDB prescription form.
 - Verify every prescription before issuing it.
+
+## Credits
+The 16-bit theme uses the "Press Start 2P" font by CodeMan38 (SIL Open Font License; see `fonts/OFL.txt`).
 
 ---
 This app was created by Isabella Navarro, MD. Latest version October 2026. isaymotion@gmail.com
