@@ -292,7 +292,7 @@ function setTheme(on) {
   document.body.classList.toggle('gba', on);
   document.querySelector('header img').src = on ? 'icon-px.png' : 'icon-192.png';
   $('#theme').textContent = on ? 'MODERN' : '16-BIT';
-  $('meta[name=theme-color]').content = on ? '#2a2060' : '#1f5fd6';
+  $('meta[name=theme-color]').content = on ? '#2a2468' : '#1f5fd6';
   try { localStorage.setItem('rxTheme', on ? 'gba' : ''); } catch (e) { }
 }
 $('#theme').onclick = () => setTheme(!document.body.classList.contains('gba'));

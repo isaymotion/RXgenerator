@@ -44,35 +44,33 @@ footer a{color:var(--blue)}
 #back{background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:10px;padding:9px 12px;font-weight:700;font-size:15px}
 #theme{margin-left:auto;background:rgba(255,255,255,.2);color:#fff;border:0;border-radius:10px;padding:9px 10px;font-weight:700;font-size:12px}
 @font-face{font-family:'Press Start 2P';src:url('fonts/PressStart2P-Regular.ttf') format('truetype');font-display:swap}
-/* 16-bit theme */
-body.gba{--blue:#3868d8;--yellow:#f8d020;--bg:#2a2060;--card:#f8f0d8;--ink:#181840;--mut:#4a4a78;--line:#181840;color:#f8f0d8;font-family:"Press Start 2P",ui-monospace,monospace;font-weight:400;font-size:10px;line-height:1.7;background:#2a2060 repeating-conic-gradient(#322870 0 25%,#2a2060 0 50%) 0 0/16px 16px}
+/* 16-bit theme (dark: green panels, blue and purple accents) */
+body.gba{--blue:#5ab8ff;--yellow:#5ab8ff;--bg:#0b1f16;--card:#143a28;--ink:#d6f5df;--mut:#86bb98;--line:#050f0a;color:#d6f5df;font-family:"Press Start 2P",ui-monospace,monospace;font-weight:400;font-size:10px;line-height:1.7;background:#0b1f16 repeating-conic-gradient(#0e281c 0 25%,#0b1f16 0 50%) 0 0/16px 16px}
 body.gba *{border-radius:0!important}
-body.gba header{background:#3868d8;border-bottom:6px solid #f8d020;box-shadow:0 6px 0 #181840}
+body.gba header{background:#2a2468;border-bottom:6px solid #5ab8ff;box-shadow:0 6px 0 #050f0a}
 body.gba header img{image-rendering:pixelated}
 body.gba h1,body.gba legend,body.gba nav button,body.gba button.pri{text-transform:uppercase}
-body.gba #back,body.gba #theme{background:#f8d020;color:#181840;border:3px solid #181840;box-shadow:0 3px 0 #181840}
-body.gba fieldset,body.gba .card{color:#181840;background:#f8f0d8;border:4px solid #181840;box-shadow:inset 0 0 0 3px #f8f0d8,inset 0 0 0 5px #8890c0,6px 6px 0 #181840}
-body.gba legend{background:#181840;color:#f8d020;padding:3px 10px;font-size:13px}
-body.gba label{color:#c8c8e8}body.gba fieldset label{color:#4a4a78}
-body.gba .hint{color:#c8c8e8}body.gba fieldset .hint{color:#4a4a78}
-body.gba input,body.gba select,body.gba textarea{background:#fff;color:#181840;border:3px solid #181840;box-shadow:inset 3px 3px 0 #c8c8e0;font-family:ui-monospace,"SF Mono","Courier New",monospace;font-weight:700}
-body.gba input:focus,body.gba select:focus,body.gba textarea:focus{outline:3px solid #f8d020}
-body.gba nav button{border:4px solid #181840;background:#8890c0;color:#181840;box-shadow:0 4px 0 #181840}
-body.gba nav button.on{background:#f8d020}
-body.gba nav button.on::before{content:"\25B6 "}
-body.gba button.pri{background:#f8d020;color:#181840;border:4px solid #181840;box-shadow:0 6px 0 #181840}
-body.gba button.sec{background:#c8d0f8;color:#181840;border:3px solid #181840;box-shadow:0 3px 0 #181840}
-body.gba button.del{background:#f8b0a8}
-body.gba button:active{transform:translateY(3px);box-shadow:none}
-body.gba button{font-family:inherit;font-weight:400;font-size:10px;line-height:1.5}
-body.gba button.pri{font-size:12px}
 body.gba h1{font-size:14px;line-height:1.4}body.gba header p{font-size:8px}
-body.gba legend{font-size:10px}body.gba label{font-size:9px;line-height:1.6}
-body.gba .hint,body.gba footer,body.gba .it small{font-size:8px;line-height:1.8}
-body.gba canvas{border:4px solid #181840}
-body.gba .it{border-bottom:3px dashed #8890c0}
-body.gba .msg{background:#a8e8a0;color:#181840;border:3px solid #181840}
-body.gba footer,body.gba footer a{color:#c8c8e8}body.gba footer a{color:#f8d020}
+body.gba #back,body.gba #theme{background:#5ab8ff;color:#04163a;border:3px solid #050f0a;box-shadow:0 3px 0 #050f0a}
+body.gba fieldset,body.gba .card{background:#143a28;color:#d6f5df;border:4px solid #050f0a;box-shadow:inset 0 0 0 3px #143a28,inset 0 0 0 5px #3f9a66,6px 6px 0 #050f0a}
+body.gba legend{background:#2a2468;color:#b9a2ff;border:2px solid #050f0a;padding:3px 10px;font-size:10px}
+body.gba label{color:#86bb98;font-size:9px;line-height:1.6}
+body.gba .hint,body.gba footer,body.gba .it small{color:#86bb98;font-size:8px;line-height:1.8}
+body.gba input,body.gba select,body.gba textarea{background:#0b1f16;color:#d6f5df;border:3px solid #3f9a66;box-shadow:inset 3px 3px 0 #050f0a;font-family:ui-monospace,"SF Mono","Courier New",monospace;font-weight:700}
+body.gba ::placeholder{color:#5f8f72}
+body.gba input:focus,body.gba select:focus,body.gba textarea:focus{outline:3px solid #b9a2ff}
+body.gba button{font-family:inherit;font-weight:400;font-size:10px;line-height:1.5}
+body.gba nav button{border:4px solid #050f0a;background:#1d5a3c;color:#cdeed8;box-shadow:0 4px 0 #050f0a}
+body.gba nav button.on{background:#5ab8ff;color:#04163a}
+body.gba nav button.on::before{content:"\25B6 "}
+body.gba button.pri{background:#5ab8ff;color:#04163a;border:4px solid #050f0a;box-shadow:0 6px 0 #050f0a;font-size:12px}
+body.gba button.sec{background:#3a2f8a;color:#e4dcff;border:3px solid #050f0a;box-shadow:0 3px 0 #050f0a}
+body.gba button.del{background:#7a2f3f;color:#ffd9de}
+body.gba button:active{transform:translateY(3px);box-shadow:none}
+body.gba canvas{border:4px solid #3f9a66}
+body.gba .it{border-bottom:3px dashed #3f9a66}
+body.gba .msg{background:#1d5a3c;color:#d6f5df;border:3px solid #5ab8ff}
+body.gba footer a{color:#b9a2ff}
 @media(max-width:420px){.row3{grid-template-columns:1fr 1fr}}
 </style>
 </head>

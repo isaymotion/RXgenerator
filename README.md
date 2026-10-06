@@ -8,7 +8,7 @@ Offline-capable prescription generator (Philippine setting) that creates a PDF o
 - Multiple medications: generic name (brand optional), dosage, quantity in numerals and words, route, frequency, duration, indication, extra sig
 - Medication templates, and an optional (off by default) patient list and prescription history stored only on the device
 - Backup and restore of profiles, signatures and templates (patient data optional) to a JSON file
-- Optional 16-bit (GBA-style) theme, switchable from the header
+- Optional dark 16-bit (GBA-style) theme, switchable from the header
 - In-app Back button (also works with the iOS swipe-back gesture)
 - A5 PDF opens in the iOS share sheet (save, print, AirDrop, send)
 - Installs to the Home Screen and works offline
